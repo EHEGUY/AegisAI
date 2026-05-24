@@ -10,26 +10,18 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core.database import get_db
+from app.core.security import get_current_user
 from app.models.user import User
+from app.models.webhook import WebhookConfig
 from app.schemas.webhook_config import WebhookConfigCreate, WebhookConfigOut
-
-try:
-    from app.core.deps import get_current_user, get_db
-except ModuleNotFoundError:
-    from app.core.database import get_db
-    from app.core.security import get_current_user
-
-try:
-    from app.models.webhook_config import WebhookConfig
-except ModuleNotFoundError:
-    from app.models.webhook import WebhookConfig
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
 @router.post("", response_model=WebhookConfigOut, status_code=status.HTTP_201_CREATED)
-async def create_webhook(
+def create_webhook(
     body: WebhookConfigCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -49,7 +41,7 @@ async def create_webhook(
 
 
 @router.get("", response_model=list[WebhookConfigOut])
-async def list_webhooks(
+def list_webhooks(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> list[WebhookConfig]:
@@ -62,7 +54,7 @@ async def list_webhooks(
 
 
 @router.delete("/{webhook_id}", status_code=status.HTTP_200_OK)
-async def delete_webhook(
+def delete_webhook(
     webhook_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
